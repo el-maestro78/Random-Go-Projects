@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Main File</title>
+</head>
+<body>
+<h1 style="text-align: center">Welcome</h1>
+<label  for="name">Type your name</label>
+<input type="text" id="name">
+<button id="submit">Submit</button>
+<button id="go_to_hello" style="display: none;">Go to Hello Page</button>
+</body>
+<script>
+    document.getElementById('submit').addEventListener('click',()=>{
+        let name = document.getElementById('name').value;
+        const jsonStr = JSON.stringify({ name: name })
+        localStorage.setItem('userName', jsonStr);
+        document.getElementById('go_to_hello').style.display = 'block';
+        alert('Name saved to localStorage!');
+    })
+    document.getElementById('go_to_hello').addEventListener('click',()=>{
+        //location.replace('hello.html');
+        location.href = '/hello';
+    });
+</script>
+</html>

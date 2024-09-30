@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello</title>
+</head>
+<body>
+<h1 style="text-align: center">Hi</h1>
+<p id="hi"></p>
+<button id="download">Do you want to download this message?</button>
+</body>
+<script>
+  let nameObj;
+  let storedName = localStorage.getItem('userName');
+  if (storedName) {
+    nameObj = JSON.parse(storedName);
+    const p = document.getElementById('hi')
+    p.innerText = `Hi ${nameObj.name}!`
+  } else {
+    alert("No name saved in localStorage.");
+  }
+  document.getElementById('download').addEventListener('click', ()=>{
+      fetch('/save_json',{
+        method: 'POST',
+        body:JSON.stringify(nameObj)
+      })
+      .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+      }).then(data => {
+          console.log('Success:', data.name);
+          alert('Data sent successfully!');
+      }).catch((error) => {
+          console.error('Error:', error);
+          alert('Failed to send data to the server.');
+      });
+  });
+</script>
+</html>
