@@ -19,5 +19,8 @@ func main() {
 	r.LoadHTMLGlob("templates/*")
 	r.GET("/", index)
 	r.GET("/ping", getPing)
-	r.Run(":8000")
+	err := r.Run(":8070")
+	if err != nil {
+		return
+	}
 }

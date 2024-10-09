@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -15,19 +17,35 @@ const (
 )
 
 type Task struct {
-	id          int       `json:"id"`          //A unique identifier for the task
-	description string    `json:"description"` // A short description of the task
-	status      int       `json:"status"`      //The status of the task (todo, in-progress, done)
-	createdAt   time.Time `json:"createdAt"`   //The date and time when the task was created
-	updatedAt   time.Time `json:"updatedAt"`   //The date and time when the task was last updated
+	Id          int       `json:"id"`          //A unique identifier for the task
+	Description string    `json:"description"` // A short description of the task
+	Status      int       `json:"status"`      //The status of the task (todo, in-progress, done)
+	CreatedAt   time.Time `json:"createdAt"`   //The date and time when the task was created
+	UpdatedAt   time.Time `json:"updatedAt"`   //The date and time when the task was last updated
 }
 
 func saveTasks(tasks []Task, filename string) error {
-	file, err := os.Create(filename)
-	if err != nil {
+	var file *os.File
+	//var err error
+	if _, err := os.Stat(filename); err == nil {
+		file, err = os.OpenFile(filename, os.O_WRONLY, 0644) //O_APPEND|os.O_WRONLY
+		if err != nil {
+			return err
+		}
+	} else if os.IsNotExist(err) {
+		file, err = os.Create(filename)
+		if err != nil {
+			return err
+		}
+	} else {
 		return err
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(file)
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", " ") //format for readability
 	return encoder.Encode(tasks)
@@ -38,7 +56,12 @@ func loadTasks(filename string) ([]Task, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(file)
 
 	var tasks []Task
 	decoder := json.NewDecoder(file)
@@ -52,16 +75,28 @@ func currentTaskID(tasks []Task) int {
 	}
 	maxId := 0
 	for i := range tasks {
-		if tasks[i].id > maxId {
-			maxId = tasks[i].id
+		if tasks[i].Id > maxId {
+			maxId = tasks[i].Id
 		}
 	}
 	return maxId
 }
 
+func prettyPrint(tasks []Task) error {
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(tasks); err != nil {
+		return err
+	}
+	return nil
+}
+
 func printTasks(tasks []Task) {
 	if len(tasks) > 0 {
-		fmt.Println(tasks)
+		err := prettyPrint(tasks)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
 	} else {
 		fmt.Println("There are no tasks stored")
 	}
@@ -81,36 +116,45 @@ func getStatus(status string) int {
 }
 
 func printTasksByStatus(tasks []Task, status int) {
-	if len(tasks) == 0 {
-		fmt.Println("There are no tasks stored")
-	} else {
+	if len(tasks) > 0 {
 		var filtered []Task
 		for _, task := range tasks {
-			if task.status == status {
+			if task.Status == status {
 				filtered = append(filtered, task)
 			}
 		}
-		fmt.Println(filtered)
+		if len(filtered) > 0 {
+			err := prettyPrint(tasks)
+			if err != nil {
+				fmt.Println("Error:", err)
+			}
+		}
+		fmt.Println("There are no tasks stored")
+	} else {
+		fmt.Printf("There are no tasks with status %d\n", status)
 	}
 }
 
-func addTask(tasks []Task, description string, tasksId *int) {
+func addTask(tasks []Task, description string, tasksId *int) []Task {
 	task := Task{
-		id:          *tasksId,
-		description: description,
-		status:      0,
-		createdAt:   time.Now().Truncate(24 * time.Hour), //time.Time{},
-		updatedAt:   time.Now().Truncate(24 * time.Hour),
+		Id:          *tasksId,
+		Description: description,
+		Status:      todo,
+		CreatedAt:   time.Time{},
+		UpdatedAt:   time.Time{}, //time.Now().Truncate(24 * time.Hour),
 	}
 	tasks = append(tasks, task)
 	*tasksId++
+	fmt.Printf("%s Added successfully\n", description)
+	return tasks
 }
 
-func updateTask(tasks []Task, taskId int, description string) {
+func updateTask(tasks []Task, taskId int, description string) []Task {
 	var changed = false
 	for i := range tasks {
-		if tasks[i].id == taskId {
-			tasks[i].description = description
+		if tasks[i].Id == taskId {
+			tasks[i].Description = description
+			tasks[i].UpdatedAt = time.Time{}
 			changed = true
 			break
 		}
@@ -120,12 +164,13 @@ func updateTask(tasks []Task, taskId int, description string) {
 	} else {
 		fmt.Println("Task updated")
 	}
+	return tasks
 }
 
 func deleteTask(tasks []Task, taskId int) []Task {
 	var changed = false
 	for i := range tasks {
-		if tasks[i].id == taskId {
+		if tasks[i].Id == taskId {
 			tasks = append(tasks[:i], tasks[i+1:]...)
 			changed = true
 			break
@@ -139,11 +184,12 @@ func deleteTask(tasks []Task, taskId int) []Task {
 	return tasks
 }
 
-func markInProgress(tasks []Task, taskId int) {
+func markInProgress(tasks []Task, taskId int) []Task {
 	var changed = false
 	for i := range tasks {
-		if tasks[i].id == taskId {
-			tasks[i].status = 1
+		if tasks[i].Id == taskId {
+			tasks[i].Status = inProgress
+			tasks[i].UpdatedAt = time.Time{}
 			changed = true
 			break
 		}
@@ -153,13 +199,15 @@ func markInProgress(tasks []Task, taskId int) {
 	} else {
 		fmt.Println("Task updated")
 	}
+	return tasks
 }
 
-func markDone(tasks []Task, taskId int) {
+func markDone(tasks []Task, taskId int) []Task {
 	var changed = false
 	for i := range tasks {
-		if tasks[i].id == taskId {
-			tasks[i].status = 2
+		if tasks[i].Id == taskId {
+			tasks[i].Status = done
+			tasks[i].UpdatedAt = time.Time{}
 			changed = true
 			break
 		}
@@ -169,37 +217,60 @@ func markDone(tasks []Task, taskId int) {
 	} else {
 		fmt.Println("Task updated")
 	}
+	return tasks
 }
 
 func main() {
 	var tasks []Task
-	var tasksId = currentTaskID(tasks)
 	tasks, err := loadTasks("tasks.json")
+	var tasksId = currentTaskID(tasks)
+	tasksId++
 	if err != nil {
-		fmt.Println("Empty Tasks")
+		//fmt.Println("Empty Tasks")
 	}
-
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Println("Enter command new command. Type help to see all commands")
 	for { //while True
-		args := os.Args
-		if len(args) < 3 {
-			fmt.Println("Usage: go run main.go [command] [options]")
-			return
+		//fmt.Print("Enter command: ")
+		fmt.Print("task-cli ")
+		if !scanner.Scan() {
+			break
 		}
-		command := args[1]
+		line := scanner.Text()
+		args := strings.Fields(line) // Split input into arguments
+		if len(args) < 1 {
+			fmt.Print("Error. Try again")
+			continue
+		}
+		command := args[0]
 
 		switch command {
 		case "add":
-			description := args[2]
-			addTask(tasks, description, &tasksId)
+			if len(args) < 2 {
+				fmt.Println("Usage: add [description]")
+				continue
+			}
+			//description := args[1]
+			description := strings.Join(args[1:], " ")
+			tasks = addTask(tasks, description, &tasksId)
 		case "update":
-			taskID, err := strconv.Atoi(args[2])
+			if len(args) < 3 {
+				fmt.Println("Usage: update [taskID] [description]")
+				continue
+			}
+			taskID, err := strconv.Atoi(args[1])
 			if err != nil {
 				fmt.Println("Invalid ID type, try again")
 			}
-			description := args[3]
-			updateTask(tasks, taskID, description)
+			description := strings.Join(args[1:], " ")
+			//description := args[2]
+			tasks = updateTask(tasks, taskID, description)
 		case "delete":
-			taskID, err := strconv.Atoi(args[2])
+			if len(args) < 2 {
+				fmt.Println("Usage: delete [taskID]")
+				continue
+			}
+			taskID, err := strconv.Atoi(args[1])
 			if err != nil {
 				fmt.Println("Invalid ID type, try again")
 			}
@@ -208,24 +279,36 @@ func main() {
 			if len(args) == 1 {
 				printTasks(tasks)
 			} else {
-				status := getStatus(args[2])
+				if len(args) < 2 {
+					printTasks(tasks)
+					continue
+				}
+				status := getStatus(args[1])
 				if status < 0 {
 					fmt.Println("Invalid status type, try again")
 				}
 				printTasksByStatus(tasks, status)
 			}
-		case "mark_in_progress":
-			taskID, err := strconv.Atoi(args[2])
+		case "mark-in-progress":
+			if len(args) < 2 {
+				fmt.Println("Usage: mark_in_progress [taskID]")
+				continue
+			}
+			taskID, err := strconv.Atoi(args[1])
 			if err != nil {
 				fmt.Println("Invalid ID type, try again")
 			}
-			markInProgress(tasks, taskID)
-		case "mark_done":
-			taskID, err := strconv.Atoi(args[2])
+			tasks = markInProgress(tasks, taskID)
+		case "mark-done":
+			if len(args) < 2 {
+				fmt.Println("Usage: mark_done [taskID]")
+				continue
+			}
+			taskID, err := strconv.Atoi(args[1])
 			if err != nil {
 				fmt.Println("Invalid ID type, try again")
 			}
-			markDone(tasks, taskID)
+			tasks = markDone(tasks, taskID)
 		case "exit":
 			err := saveTasks(tasks, "tasks.json")
 			if err != nil {
@@ -235,9 +318,17 @@ func main() {
 				fmt.Println("Error saving tasks in json", err)
 				os.Exit(1)
 			}
+		case "help":
+			fmt.Println("- add [description]")
+			fmt.Println("- update [id] [description]")
+			fmt.Println("- delete [id]")
+			fmt.Println("- list {options}: done, todo, in-progress")
+			fmt.Println("- mark-in-progress [id]")
+			fmt.Println("- mark-done [id]")
+			fmt.Println("- exit. Save and exit")
 		default:
 			fmt.Println("Unknown command:", command)
-			fmt.Println("Unknown command:", command)
+			continue
 		}
 	}
 

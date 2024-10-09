@@ -1,0 +1,23 @@
+[
+ {
+  "id": 1,
+  "description": "spam",
+  "status": 1,
+  "createdAt": "0001-01-01T00:00:00Z",
+  "updatedAt": "0001-01-01T00:00:00Z"
+ },
+ {
+  "id": 2,
+  "description": "spam, eggs, spam, spam, spam",
+  "status": 0,
+  "createdAt": "0001-01-01T00:00:00Z",
+  "updatedAt": "0001-01-01T00:00:00Z"
+ },
+ {
+  "id": 3,
+  "description": "beer",
+  "status": 2,
+  "createdAt": "0001-01-01T00:00:00Z",
+  "updatedAt": "0001-01-01T00:00:00Z"
+ }
+]
