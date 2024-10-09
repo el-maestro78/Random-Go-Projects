@@ -21,3 +21,5 @@
 go.work
 WebServer/.idea/
 /goGin/.idea
+cli-bot/.env
+/test
