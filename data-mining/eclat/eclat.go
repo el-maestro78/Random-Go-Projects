@@ -36,20 +36,22 @@ func eclat(transactions [][]string, minSupport int) []string {
 	transactionItems := getTransactionIDs(transactions)
 	for id, items := range transactionItems {
 		if len(items) >= minSupport {
-			eclatRecursive([]string{id}, items, transactionItems, minSupport, freqItemsets)
+			eclatRecursive([]string{id}, items, transactionItems, minSupport, &freqItemsets)
 		}
 	}
 	return freqItemsets
 }
 
-func eclatRecursive(prefix []string, transactions []int, transactionItems map[string][]int, minSupport int, freqItemsets []string) {
-	freqItemsets = append(freqItemsets, prefix[])
-	for item, transaction := range transactionItems {
-		if item <= prefix[len(prefix)-1] {
-			new_transactions := intersect(transactions, transactionItems[item])
-			if len(new_transactions) >= minSupport {
-				new_prefix := append(prefix, item)
-				eclatRecursive(new_prefix, new_transactions, transactionItems, minSupport, freqItemsets)
+func eclatRecursive(prefix []string, transactions []int, transactionItems map[string][]int, minSupport int, freqItemsets *[]string) {
+	*freqItemsets = append(*freqItemsets, prefix[len(prefix)-1])
+	for item := range transactionItems {
+		prefixNum, _ := strconv.Atoi(prefix[len(prefix)-1])
+		itemNum, _ := strconv.Atoi(item)
+		if itemNum <= prefixNum {
+			newTransactions := intersect(transactions, transactionItems[item])
+			if len(newTransactions) >= minSupport {
+				newPrefix := append(prefix, item)
+				eclatRecursive(newPrefix, newTransactions, transactionItems, minSupport, freqItemsets)
 			}
 		}
 	}
