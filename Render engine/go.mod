@@ -1,3 +1,3 @@
 module render
 
-go 1.21.0
+go 1.23.1

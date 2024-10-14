@@ -2,8 +2,10 @@
 
 - Cli bot
 - Data Mining Algorithms
-- Gin Framework Demo
-- 3D Renderer -Not ready
+  - Apriori
+  - Eclat
+- Gin Framework simple demo
+- 3D Renderer - __Not ready__
 - [Task Tracker Cli](https://roadmap.sh/projects/task-tracker)
-- Url Shortener -Not ready
-- Web Server 
+- Url Shortener - __Not ready__
+- Web Server simple demo
