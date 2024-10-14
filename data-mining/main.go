@@ -1,6 +1,7 @@
 package main
 
 import (
+	"data-mining/apriori"
 	"data-mining/eclat"
 	"fmt"
 )
@@ -19,9 +20,13 @@ func getData() [][]string {
 
 func main() {
 	transactions := getData()
-	results := eclat.Eclat(transactions, 3)
 	fmt.Print("Transactions: ")
 	fmt.Println(transactions)
-	fmt.Print("Results: ")
-	fmt.Println(results)
+	eclatResults := eclat.Eclat(transactions, 3)
+	fmt.Print("Eclat Results: ")
+	fmt.Println(eclatResults)
+	fmt.Println("-----")
+	fmt.Print("Apriori Results: ")
+	aprioriResults := apriori.Apriori(transactions, 3)
+	fmt.Println(aprioriResults)
 }

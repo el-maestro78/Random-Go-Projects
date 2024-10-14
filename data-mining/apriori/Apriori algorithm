@@ -1,0 +1,19 @@
+APRIORI(D, min_support)
+  Input: D - dataset of transactions
+         min_support - minimum support threshold
+
+  1. Initialize F = [] (to store all frequent itemsets)
+  2. C1 = generate_candidate_1_itemsets(D) (generate 1-item candidates)
+
+  3. L1 = filter_by_support(C1, min_support) (filter candidates with support ≥ min_support)
+  4. Add L1 to F
+
+  5. k = 2 (set k to 2 for the next level of itemsets)
+
+  6. while L(k-1) is not empty do
+       7. Ck = generate_candidates(L(k-1), k) (generate candidate k-itemsets from L(k-1))
+       8. Lk = filter_by_support(Ck, min_support) (filter candidates with support ≥ min_support)
+       9. Add Lk to F
+      10. k = k + 1 (increment k for the next level)
+
+  11. return F
