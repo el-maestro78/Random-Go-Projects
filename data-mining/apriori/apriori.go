@@ -2,6 +2,7 @@ package apriori
 
 import (
 	"fmt"
+	"sort"
 )
 
 func getItems(transactions [][]string) []string {
@@ -102,12 +103,11 @@ func addToFrequent(map1, frequent map[string]int) map[string]int {
 	return frequent
 }
 
-func Apriori(transactions [][]string, minSupport int) map[string]int {
+func Apriori(transactions [][]string, minSupport int) []string { //map[string]int {
 	var freqItemsets map[string]int
 	itemKeys := getItems(transactions)
 	C1 := generateCandidate1Itemsets(transactions)
 	L1 := filter(C1, minSupport)
-	//freqItemsets = append(freqItemsets, L1)
 	freqItemsets = addToFrequent(freqItemsets, L1)
 	k := 2
 	for {
@@ -117,9 +117,15 @@ func Apriori(transactions [][]string, minSupport int) map[string]int {
 		if Lk == nil {
 			break
 		}
-		//freqItemsets = append(freqItemsets, Lk)
 		freqItemsets = addToFrequent(freqItemsets, Lk)
 		k++
 	}
-	return freqItemsets
+	var results []string
+	for key := range freqItemsets {
+		results = append(results, key)
+	}
+	sort.Slice(results, func(i, j int) bool {
+		return len(results[i]) < len(results[j])
+	})
+	return results //freqItemsets
 }
