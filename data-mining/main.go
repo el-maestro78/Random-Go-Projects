@@ -1,7 +1,7 @@
 package main
 
 import (
-	"eclat"
+	"data-mining/eclat"
 	"fmt"
 )
 
@@ -19,7 +19,9 @@ func getData() [][]string {
 
 func main() {
 	transactions := getData()
-	results := eclat.eclat(transactions, 2)
+	results := eclat.Eclat(transactions, 3)
+	fmt.Print("Transactions: ")
 	fmt.Println(transactions)
+	fmt.Print("Results: ")
 	fmt.Println(results)
 }

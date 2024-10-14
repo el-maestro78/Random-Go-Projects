@@ -1,1 +1,1 @@
-module eclat
+module data-mining/eclat
