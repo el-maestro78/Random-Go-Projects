@@ -26,7 +26,7 @@ func main() {
 	fmt.Print("Eclat Results: ")
 	fmt.Println(eclatResults)
 	fmt.Println("-----")
-	fmt.Print("Apriori Results: ")
 	aprioriResults := apriori.Apriori(transactions, 3)
+	fmt.Print("Apriori Results: ")
 	fmt.Println(aprioriResults)
 }

@@ -17,6 +17,7 @@ func getTransactionIDs(transactions [][]string) map[string][]int {
 	}
 	return transactionIDs
 }
+
 func intersect(transaction1, transaction2 []int) []int {
 	elements := make(map[int]bool)
 	for _, v := range transaction1 {
@@ -44,7 +45,7 @@ func Eclat(transactions [][]string, minSupport int) []string {
 }
 
 func eclatRecursive(prefix []string, transactions []int, transactionItems map[string][]int, minSupport int, freqItemsets *[]string) {
-	fmt.Printf("Recursions %d\n", len(*freqItemsets)+1)
+	fmt.Printf("Eclat recursions %d\n", len(*freqItemsets)+1)
 	*freqItemsets = append(*freqItemsets, fmt.Sprintf("%v", prefix))
 	for item := range transactionItems {
 		//prefixNum, _ := strconv.Atoi(prefix[len(prefix)-1])

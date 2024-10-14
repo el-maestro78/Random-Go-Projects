@@ -1,27 +1,43 @@
 package apriori
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func getItems(transactions [][]string) []string {
+	itemsMap := make(map[string]struct{})
 	var items []string
 	for _, row := range transactions {
 		for _, item := range row {
-			items = append(items, item)
+			itemsMap[item] = struct{}{}
 		}
+	}
+	for item := range itemsMap {
+		items = append(items, item)
 	}
 	return items
 }
 
 func getCombinations(items []string, k int) [][]string {
 	var combinations [][]string
-	for index, item := range items {
-		if index <= (len(items) - 1) {
-			for i := 0; i < k; i++ {
-				combinations = append(combinations, []string{item, items[index+i]})
-			}
+	var combination []string
+	var backtrack func(start int)
+
+	backtrack = func(start int) {
+		if len(combination) == k {
+			combinationCopy := make([]string, k)
+			copy(combinationCopy, combination)
+			combinations = append(combinations, combinationCopy)
+			return
 		}
-		items = append(items[:index], items[index+1:]...)
+		for i := start; i < len(items); i++ {
+			combination = append(combination, items[i])
+			backtrack(i + 1)
+			combination = combination[:len(combination)-1]
+		}
 	}
+
+	backtrack(0)
 	return combinations
 }
 
@@ -48,6 +64,7 @@ func generateCandidateKItemsets(transactions [][]string, k int, items []string) 
 			}
 			if present {
 				key := fmt.Sprintf("%v", comb)
+				//key := strings.Join(comb, "")
 				C[key]++
 			}
 		}
@@ -78,20 +95,30 @@ func filter(transactions map[string]int, minSupport int) map[string]int {
 	return filtered
 }
 
-func Apriori(transactions [][]string, minSupport int) []map[string]int {
-	var freqItemsets []map[string]int
+func addToFrequent(map1, frequent map[string]int) map[string]int {
+	for key, value := range map1 {
+		frequent[key] = value
+	}
+	return frequent
+}
+
+func Apriori(transactions [][]string, minSupport int) map[string]int {
+	var freqItemsets map[string]int
 	itemKeys := getItems(transactions)
 	C1 := generateCandidate1Itemsets(transactions)
 	L1 := filter(C1, minSupport)
-	freqItemsets = append(freqItemsets, L1)
+	//freqItemsets = append(freqItemsets, L1)
+	freqItemsets = addToFrequent(freqItemsets, L1)
 	k := 2
 	for {
+		fmt.Printf("Apriori recursions %d\n", k-1)
 		Ck := generateCandidateKItemsets(transactions, k, itemKeys)
 		Lk := filter(Ck, minSupport)
 		if Lk == nil {
 			break
 		}
-		freqItemsets = append(freqItemsets, Lk)
+		//freqItemsets = append(freqItemsets, Lk)
+		freqItemsets = addToFrequent(freqItemsets, Lk)
 		k++
 	}
 	return freqItemsets
