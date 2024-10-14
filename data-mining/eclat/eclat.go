@@ -16,10 +16,41 @@ func getTransactionIDs(transactions [][]string) map[string][]int {
 	}
 	return transactionIDs
 }
+func intersect(transaction1, transaction2 []int) []int {
+	elements := make(map[int]bool)
+	for _, v := range transaction1 {
+		elements[v] = true
+	}
+	var result []int
+	for _, v := range transaction2 {
+		if elements[v] {
+			result = append(result, v)
+			delete(elements, v)
+		}
+	}
+	return result
+}
 
-func eclat(prefix string, transactions [][]string, min_support int, freq_itemsets int) {
-	transactionIDs := getTransactionIDs(transactions)
-	for id, transaction := range transactionIDs {
-		
+func eclat(transactions [][]string, minSupport int) []string {
+	var freqItemsets []string
+	transactionItems := getTransactionIDs(transactions)
+	for id, items := range transactionItems {
+		if len(items) >= minSupport {
+			eclatRecursive([]string{id}, items, transactionItems, minSupport, freqItemsets)
+		}
+	}
+	return freqItemsets
+}
+
+func eclatRecursive(prefix []string, transactions []int, transactionItems map[string][]int, minSupport int, freqItemsets []string) {
+	freqItemsets = append(freqItemsets, prefix[])
+	for item, transaction := range transactionItems {
+		if item <= prefix[len(prefix)-1] {
+			new_transactions := intersect(transactions, transactionItems[item])
+			if len(new_transactions) >= minSupport {
+				new_prefix := append(prefix, item)
+				eclatRecursive(new_prefix, new_transactions, transactionItems, minSupport, freqItemsets)
+			}
+		}
 	}
 }

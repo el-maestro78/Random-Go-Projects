@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"eclat"
+	"fmt"
+)
 
 func getData() [][]string {
 	// Dummy for now
@@ -16,5 +19,7 @@ func getData() [][]string {
 
 func main() {
 	transactions := getData()
+	results := eclat.eclat(transactions, 2)
 	fmt.Println(transactions)
+	fmt.Println(results)
 }

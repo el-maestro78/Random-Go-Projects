@@ -1,0 +1,21 @@
+ECLAT(D, min_support)
+  Input: D - dataset of transactions
+         min_support - minimum support threshold
+
+  1. Initialize F = [] (to store frequent itemsets)
+  2. T = {item: tid_list} (transaction IDs for each item)
+
+  3. for each item i in T do
+       4. if count(T[i]) >= min_support then
+             5. ECLAT_recursive({i}, T[i], T, min_support, F)
+
+  6. return F
+
+
+ECLAT_recursive(prefix, tid_list, T, min_support, F)
+  1. Add prefix to F
+  2. for each item j in T where j > prefix.last do
+       3. new_tid_list = intersect(tid_list, T[j])
+       4. if count(new_tid_list) >= min_support then
+             5. new_prefix = prefix + j
+             6. ECLAT_recursive(new_prefix, new_tid_list, T, min_support, F)
