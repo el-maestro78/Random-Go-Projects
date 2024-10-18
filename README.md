@@ -1,4 +1,4 @@
-# Multiple Backend Projects written in Go
+# Multiple Backend Projects written in ʕ◔ϖ◔ʔ
 
 - Cli bot
 - Data Mining Algorithms
