@@ -23,3 +23,5 @@ WebServer/.idea/
 /goGin/.idea
 cli-bot/.env
 /test
+url-shortener/.env
+.idea/vcs.xml
